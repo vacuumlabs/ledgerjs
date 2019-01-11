@@ -24,11 +24,14 @@ const HARDENED = 0x80000000;
 
 const INS_GET_VERSION = 0x00;
 const INS_GET_EXT_PUBLIC_KEY = 0x10;
+const INS_GET_ADDRESS = 0x11;
 
 // These are just JS error codes (no parallel with in-ledger app codes)
 const INVALID_PATH = 0x5001;
 const INVALID_PATH_LENGTH = 0x5002;
 const INDEX_NAN = 0x5003;
+
+const INS_RUN_TESTS = 0xF0;
 
 /**
  * Cardano ADA API
@@ -46,7 +49,9 @@ export default class Ada {
     this.methods = [
       "getVersion",
       "getExtendedPublicKey",
-      "signTransaction"
+      "signTransaction",
+      "getAddress",
+      "runTests",
     ];
     this.transport.decorateAppAPIMethods(this, this.methods, scrambleKey);
   }
@@ -122,5 +127,64 @@ export default class Ada {
       .toString("hex");
 
     return { publicKey, chainCode };
+  }
+
+  /**
+   * @description Get address corresponing to the specified BIP 32 path.
+   *
+   * @param {Array<number>} indexes The path indexes. Path must begin with `44'/1815'/0'/[0,1]/n`, and may be up to 10 indexes long.
+   * @return {Promise<{ address:string }>} The address for the given path.
+   *
+   * @throws 5001 - The path provided does not have the first 3 indexes hardened
+   * @throws 5002 - The path provided is less than 5 indexes
+   * @throws 5003 - Some of the indexes is not a number
+   *
+   * @example
+   * const { address } = await ada.getAddress([ HARDENED + 44, HARDENED + 1815, HARDENED + 0, 1, 5 ]);
+   * console.log(publicKey);
+   *
+   */
+  async getAddress(
+    indexes: Array<number>
+  ): Promise<{ publicKey: string, chainCode: string }> {
+    if (indexes.length < 5 || indexes.length > 10) {
+      throw new TransportStatusError(INVALID_PATH_LENGTH);
+    }
+    if (indexes.some(index => isNaN(index))) {
+      throw new TransportStatusError(INDEX_NAN);
+    }
+    if (indexes.slice(0, 3).some(x => x < HARDENED)) {
+      throw new TransportStatusError(INVALID_PATH);
+    }
+
+    const data = Buffer.alloc(1 + 4 * indexes.length);
+    data.writeUInt8(indexes.length, 0);
+
+    for (let i = 0; i < indexes.length; i++) {
+      data.writeUInt32BE(indexes[i], 1 + i * 4);
+    }
+
+    const response = await this.transport.send(
+      CLA,
+      INS_GET_ADDRESS,
+      0x00,
+      0x00,
+      data
+    );
+
+    const addressLength = response[0];
+    const address = response.slice(1, 1 + addressLength).toString("hex");
+
+
+    return { address };
+  }
+
+  /**
+ * Runs tests
+ */
+  async runTests(): Promise<{}> {
+    await this.transport.send(CLA, INS_RUN_TESTS, 0x00, 0x00);
+
+    return {};
   }
 }

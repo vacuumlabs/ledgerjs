@@ -14,7 +14,19 @@ async function example() {
   //   ])
   // );
 
-  console.log(await appAda.getVersion());
+  // console.log(
+  //   await appAda.getAddress([
+  //     0x80000000 + 44,
+  //     0x80000000 + 1815,
+  //     0x80000000 + 1,
+  //     0,
+  //     5
+  //   ])
+  // );
+
+  // console.log(await appAda.getVersion());
+
+  console.log(await appAda.runTests());
 }
 
 example();
