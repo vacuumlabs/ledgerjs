@@ -15,22 +15,20 @@ describe("getExtendedPublicKey", async () => {
   });
 
   it("Should successfully get extended public key", async () => {
-    const der1 = pathDerivations["44'/1815'/1'"];
-    const der2 = pathDerivations["44'/1815'/1'/0/12'"];
-    const der3 = pathDerivations["44'/1815'/1'/0/10'/1/2/3"];
+    const test = async path => {
+      const derivation = pathDerivations[path];
 
-    const result1 = await ada.getExtendedPublicKey(pathToArray(der1.path));
-    const result2 = await ada.getExtendedPublicKey(pathToArray(der2.path));
-    const result3 = await ada.getExtendedPublicKey(pathToArray(der3.path));
+      const result = await ada.getExtendedPublicKey(
+        pathToArray(derivation.path)
+      );
 
-    expect(result1.publicKey).to.equal(der1.publicKey);
-    expect(result1.chainCode).to.equal(der1.chainCode);
+      expect(result.publicKey).to.equal(derivation.publicKey);
+      expect(result.chainCode).to.equal(derivation.chainCode);
+    };
 
-    expect(result2.publicKey).to.equal(der2.publicKey);
-    expect(result2.chainCode).to.equal(der2.chainCode);
-
-    expect(result3.publicKey).to.equal(der3.publicKey);
-    expect(result3.chainCode).to.equal(der3.chainCode);
+    await test("44'/1815'/1'");
+    await test("44'/1815'/1'/0/12'");
+    await test("44'/1815'/1'/0/10'/1/2/3");
   });
 
   it("Should return the same public key with the same path consistently", async () => {

@@ -58,35 +58,28 @@ describe("getExtendedPublicKey", async () => {
   });
 
   it("Should not permit unknown P1/P2 parameters", async () => {
-    try {
-      // invalid P1
-      await transport.send(
-        CLA,
-        INS_GET_EXT_PUBLIC_KEY,
-        0x01,
-        0x00,
-        validDataBuffer
-      );
+    const send = async (p1, p2) => {
+      try {
+        // invalid P1
+        await transport.send(
+          CLA,
+          INS_GET_EXT_PUBLIC_KEY,
+          p1,
+          p2,
+          validDataBuffer
+        );
 
-      throw new Error(codeTooFarMessage);
-    } catch (error) {
-      expect(error.message).not.to.have.string(codeTooFarMessage);
-    }
+        throw new Error(codeTooFarMessage);
+      } catch (error) {
+        expect(error.message).not.to.have.string(codeTooFarMessage);
+      }
+    };
 
-    try {
-      // invalid P2
-      await transport.send(
-        CLA,
-        INS_GET_EXT_PUBLIC_KEY,
-        0x00,
-        0x01,
-        validDataBuffer
-      );
+    // Invalid P1
+    await send(0x01, 0x00);
 
-      throw new Error(codeTooFarMessage);
-    } catch (error) {
-      expect(error.message).not.to.have.string(codeTooFarMessage);
-    }
+    // // Invalid P2
+    await send(0x00, 0x01);
   });
 
   it("Should not permit path not starting with 44'/1815'/n'", async () => {
