@@ -1,7 +1,9 @@
 import { expect } from "chai";
-import pathDerivations from "../../pathDerivations";
+import pathDerivations from "../../fixtures/pathDerivations";
 
 import { getAda, pathToArray } from "../../utils";
+
+const shouldHaveThrownEarlier = "should have thrown before this line";
 
 describe("getExtendedPublicKey", async () => {
   let ada = {};
@@ -48,7 +50,7 @@ describe("getExtendedPublicKey", async () => {
         "non-number"
       ]);
 
-      throw new Error("Expected error");
+      throw new Error(shouldHaveThrownEarlier);
     } catch (error) {
       expect(error.message).to.have.string("5003");
     }
@@ -58,7 +60,7 @@ describe("getExtendedPublicKey", async () => {
     try {
       await ada.getExtendedPublicKey(pathToArray("44'/1815'/33/125"));
 
-      throw new Error("Expected error");
+      throw new Error(shouldHaveThrownEarlier);
     } catch (error) {
       expect(error.message).to.have.string("5001");
     }
@@ -68,7 +70,7 @@ describe("getExtendedPublicKey", async () => {
     try {
       await ada.getExtendedPublicKey(pathToArray("44'/1815'"));
 
-      throw new Error("Expected error");
+      throw new Error(shouldHaveThrownEarlier);
     } catch (error) {
       expect(error.message).to.have.string("5002");
     }
