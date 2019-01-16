@@ -33,13 +33,19 @@ const INVALID_PATH = 0x5001;
 const INVALID_PATH_LENGTH = 0x5002;
 const INDEX_NAN = 0x5003;
 
-const chunk = (array, chunks) => {
+const chunkBy = (data, chunkLengths) => {
+  const chunkLengthsSum = chunkLengths.reduce((x, y) => x + y);
+
+  if (chunkLengthsSum > data.length) {
+    throw new Error("Chunks exceed data length.");
+  }
+
   let offset = 0;
 
   const result = [];
 
-  for (let c of chunks) {
-    result.push(array.slice(offset, offset + c));
+  for (let c of chunkLengths) {
+    result.push(data.slice(offset, offset + c));
 
     offset += c;
   }
@@ -142,7 +148,12 @@ export default class Ada {
       );
     }
 
-    const [txHash, outputNumber, amount, hmac] = chunk(result, [32, 4, 8, 16]);
+    const [txHash, outputNumber, amount, hmac] = chunkBy(result, [
+      32,
+      4,
+      8,
+      16
+    ]);
 
     return {
       txHash: txHash.toString("hex"),
