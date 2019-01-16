@@ -44,7 +44,9 @@ const chunkBy = (data, chunkLengths) => {
 
   const result = [];
 
-  for (let c of chunkLengths) {
+  const restLength = data.length - chunkLengthsSum;
+
+  for (let c of [...chunkLengths, restLength]) {
     result.push(data.slice(offset, offset + c));
 
     offset += c;
@@ -148,12 +150,16 @@ export default class Ada {
       );
     }
 
-    const [txHash, outputNumber, amount, hmac] = chunkBy(result, [
+    const [txHash, outputNumber, amount, hmac, returnCode] = chunkBy(result, [
       32,
       4,
       8,
       16
     ]);
+
+    if (returnCode.length != 2 || returnCode.readUIntBE(0, 2) != 0x9000) {
+      throw new Error("Invalid return code");
+    }
 
     return {
       txHash: txHash.toString("hex"),
