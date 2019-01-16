@@ -33,13 +33,13 @@ const INVALID_PATH = 0x5001;
 const INVALID_PATH_LENGTH = 0x5002;
 const INDEX_NAN = 0x5003;
 
-const chunkResult = (response: Buffer, chunks) => {
+const chunk = (array, chunks) => {
   let offset = 0;
 
   const result = [];
 
   for (let c of chunks) {
-    result.push(response.slice(offset, offset + c));
+    result.push(array.slice(offset, offset + c));
 
     offset += c;
   }
@@ -118,7 +118,7 @@ export default class Ada {
     const P1_CONTINUE = 0x02;
     const P2_UNUSED = 0x00;
 
-    const CHUNK_SIZE = 100;
+    const CHUNK_SIZE = 255;
 
     const txRaw = Buffer.from(txHex, "hex");
     {
@@ -142,12 +142,7 @@ export default class Ada {
       );
     }
 
-    const [txHash, outputNumber, amount, hmac] = chunkResult(result, [
-      32,
-      4,
-      8,
-      16
-    ]);
+    const [txHash, outputNumber, amount, hmac] = chunk(result, [32, 4, 8, 16]);
 
     return {
       txHash: txHash.toString("hex"),
