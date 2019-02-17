@@ -79,7 +79,7 @@ export type Witness = {|
 |};
 
 export type SignTransactionResponse = {|
-  txHashHex: string, // Todo
+  txHashHex: string,
   witnesses: Array<Witness>
 |};
 
